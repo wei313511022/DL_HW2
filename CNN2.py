@@ -13,7 +13,7 @@ train_labels = tf.keras.utils.to_categorical(train_labels, 10)
 test_labels = tf.keras.utils.to_categorical(test_labels, 10)
 
 # Experiment with different stride and filter sizes
-filter_size = (4, 4)
+filter_size = (5, 5)
 stride_size = (1, 1)  # Reduced stride size to preserve dimensions
 padding_type = "same"  # Added padding to maintain spatial dimensions
 
@@ -52,7 +52,7 @@ class TestAccuracyCallback(tf.keras.callbacks.Callback):
 test_accuracy_callback = TestAccuracyCallback(test_data=(test_images, test_labels))
 
 # Train the model and store history for learning curves
-history = model.fit(train_images, train_labels, epochs=1, batch_size=64, validation_split=0.1, callbacks=[test_accuracy_callback])
+history = model.fit(train_images, train_labels, epochs=50, batch_size=64, validation_split=0.1, callbacks=[test_accuracy_callback])
 
 # Evaluate the model on the test data
 test_loss, test_acc = model.evaluate(test_images, test_labels)
