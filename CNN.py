@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from tensorflow.keras import layers, models
+from tensorflow.keras import layers, models, regularizers
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.models import Model
 
@@ -14,20 +14,23 @@ train_labels = tf.keras.utils.to_categorical(train_labels)
 test_labels = tf.keras.utils.to_categorical(test_labels)
 
 # Experiment with different stride and filter sizes
-filter_size = (5, 5)
+filter_size = (4, 4)
 stride_size = (1, 1)  # Reduced stride size to preserve dimensions
 padding_type = "same"  # Added padding to maintain spatial dimensions
 
+# Set the L2 regularization factor
+l2_lambda = 0.001
+
 # Define the CNN architecture
 model = models.Sequential([
-    layers.Conv2D(6, filter_size, strides=stride_size, padding=padding_type, activation="relu", input_shape=(28, 28, 1)),
+    layers.Conv2D(6, filter_size, strides=stride_size, padding=padding_type, activation="relu", input_shape=(28, 28, 1), kernel_regularizer=regularizers.l2(l2_lambda)),
     layers.MaxPooling2D((2, 2), padding=padding_type),
-    layers.Conv2D(16, filter_size, strides=stride_size, padding=padding_type, activation="relu"),
+    layers.Conv2D(16, filter_size, strides=stride_size, padding=padding_type, activation="relu", kernel_regularizer=regularizers.l2(l2_lambda)),
     layers.MaxPooling2D((2, 2), padding=padding_type),
-    layers.Conv2D(120, filter_size, strides=stride_size, padding=padding_type, activation="relu"),
+    layers.Conv2D(120, filter_size, strides=stride_size, padding=padding_type, activation="relu", kernel_regularizer=regularizers.l2(l2_lambda)),
     layers.Flatten(),
-    layers.Dense(84, activation="relu"),
-    layers.Dense(10, activation="softmax"),
+    layers.Dense(84, activation="relu", kernel_regularizer=regularizers.l2(l2_lambda)),
+    layers.Dense(10, activation="softmax", kernel_regularizer=regularizers.l2(l2_lambda)),
 ])
 
 # Compile the model
@@ -47,7 +50,7 @@ class TestAccuracyCallback(tf.keras.callbacks.Callback):
 test_accuracy_callback = TestAccuracyCallback(test_data=(test_images, test_labels))
 
 # Train the model and store history for learning curves
-history = model.fit(train_images, train_labels, epochs=10, batch_size=64, validation_split=0.1,callbacks=[test_accuracy_callback])
+history = model.fit(train_images, train_labels, epochs=50, batch_size=64, validation_split=0.1,callbacks=[test_accuracy_callback])
 
 model.predict(train_images[:1])
 # Evaluate the model on the test data
@@ -142,8 +145,8 @@ def plot_feature_maps(activations):
     for i, activation in enumerate(activations):
         num_filters = activation.shape[-1]
         size = activation.shape[1]  # Assuming feature maps are square
-        n_cols = 4  # Number of columns in the plot
-        n_rows = 4  # Fixed number of rows
+        n_cols = 12  # Number of columns in the plot
+        n_rows = 10  # Fixed number of rows
 
         plt.figure(figsize=(n_cols, n_rows))
         for j in range(num_filters):
