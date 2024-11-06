@@ -2,11 +2,15 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, regularizers
 from tensorflow.keras.datasets import cifar10
 from tensorflow.keras.utils import to_categorical
+import numpy as np
+import matplotlib.pyplot as plt
 
 # Load and preprocess the CIFAR-10 dataset
 (train_images, train_labels), (test_images, test_labels) = cifar10.load_data()
-train_images, test_images = train_images / 255.0, test_images / 255.0  # Normalize to [0, 1]
-train_labels, test_labels = to_categorical(train_labels), to_categorical(test_labels)
+train_images = train_images.astype("float32") / 255
+test_images = test_images.astype("float32") / 255
+train_labels = tf.keras.utils.to_categorical(train_labels, 10)
+test_labels = tf.keras.utils.to_categorical(test_labels, 10)
 
 # Residual block
 def residual_block(x, filters, kernel_size=3, stride=1, conv_shortcut=False):
