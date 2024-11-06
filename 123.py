@@ -13,8 +13,8 @@ train_labels = tf.keras.utils.to_categorical(train_labels, 10)
 test_labels = tf.keras.utils.to_categorical(test_labels, 10)
 
 # Experiment with different stride and filter sizes
-filter_size = 2
-stride_size = 1  # Reduced stride size to preserve dimensions
+filter_size = 5
+stride_size = 2  # Reduced stride size to preserve dimensions
 padding_type = "same"  # Added padding to maintain spatial dimensions
 
 # Set the L2 regularization factor
@@ -23,8 +23,8 @@ l2_lambda = 0.0
 # Residual block
 def residual_block(x, filters, kernel_size, stride, conv_shortcut=False):
     shortcut = x
-    if conv_shortcut:  # Use a 1x1 convolution for shortcut connection
-        shortcut = layers.Conv2D(filters, 10, strides=stride, padding=padding_type)(shortcut)
+    if conv_shortcut or stride > 1:  # Use a 1x1 convolution for shortcut connection
+        shortcut = layers.Conv2D(filters, 1, strides=stride, padding=padding_type)(shortcut)
         shortcut = layers.BatchNormalization()(shortcut)
 
     # First layer of the residual block
@@ -85,7 +85,7 @@ class TestAccuracyCallback(tf.keras.callbacks.Callback):
 test_accuracy_callback = TestAccuracyCallback(test_data=(test_images, test_labels))
 
 # Train the model and store history for learning curves
-history = model.fit(train_images, train_labels, epochs=1, batch_size=64, validation_split=0.1, callbacks=[test_accuracy_callback])
+history = model.fit(train_images, train_labels, epochs=10, batch_size=64, validation_split=0.1, callbacks=[test_accuracy_callback])
 
 # Evaluate the model on the test data
 test_loss, test_acc = model.evaluate(test_images, test_labels)
